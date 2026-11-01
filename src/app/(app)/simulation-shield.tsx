@@ -33,7 +33,7 @@ export default function SimulatedShieldScreen() {
         .then((currentSnapshot) => {
           if (!active) return;
           if (!currentSnapshot.simulation || !currentSnapshot.isBlocked) {
-            router.replace('/');
+            router.replace('/home');
             return;
           }
           setSnapshot(currentSnapshot);
@@ -135,7 +135,7 @@ export default function SimulatedShieldScreen() {
             )}
             <Pressable
               accessibilityRole="button"
-              onPress={() => router.replace('/')}
+              onPress={() => router.replace('/home')}
               style={styles.backButton}
             >
               <Text style={styles.backButtonText}>Retour à Tempo</Text>

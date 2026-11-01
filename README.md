@@ -20,7 +20,7 @@ npm start
 
 1. Crée un projet Supabase et active l'authentification par e-mail et mot de passe.
 2. Pour tester une connexion immédiate en développement, désactive la confirmation d'e-mail dans les paramètres d'authentification. Si elle reste active, Tempo affiche un message demandant de confirmer l'adresse.
-3. Copie `.env.example` vers `.env`, puis renseigne l'URL du projet et sa clé `anon` publique (`EXPO_PUBLIC_SUPABASE_URL` et `EXPO_PUBLIC_SUPABASE_ANON_KEY`).
+3. Copie `.env.example` vers `.env`, puis renseigne l'URL du projet et sa clé publique `anon`/publishable (`EXPO_PUBLIC_SUPABASE_URL` et `EXPO_PUBLIC_SUPABASE_ANON_KEY`). Dans Supabase, copie la « Project URL » depuis **Project Settings → API** : ce n'est pas `https://supabase.com`. N'utilise jamais la clé `service_role` ou une clé `secret` dans l'application.
 4. Redémarre Expo après toute modification des variables d'environnement :
 
 ```bash

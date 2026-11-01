@@ -92,7 +92,7 @@ export default function QuizScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Retour à l’accueil"
-            onPress={() => router.replace('/')}
+            onPress={() => router.replace('/home')}
             style={styles.backButton}
           >
             <Text style={styles.backButtonText}>‹</Text>
@@ -122,7 +122,7 @@ export default function QuizScreen() {
             ) : result.passed && !errorMessage ? (
               <Pressable
                 accessibilityRole="button"
-                onPress={() => router.replace('/')}
+                onPress={() => router.replace('/home')}
                 style={styles.primaryButton}
               >
                 <Text style={styles.primaryButtonText}>Retour à Tempo</Text>
