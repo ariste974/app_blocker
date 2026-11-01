@@ -11,6 +11,8 @@ import type {
 } from './screenTime.types';
 import { getDeviceActivityModule } from './deviceActivityModule.ios';
 
+export { AUTHORIZATION } from './screenTime.types';
+
 const selectionId = 'tempo-block-selection';
 const blockActivityName = `${selectionId}-daily`;
 const unlockActivityName = `${selectionId}-quiz-unlock`;
