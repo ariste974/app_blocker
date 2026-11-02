@@ -35,6 +35,29 @@ Quand le module natif Screen Time n'est pas présent, Tempo utilise automatiquem
 
 Les routes d'inscription et de connexion sont publiques tant qu'aucune session n'existe. Une session Supabase restaurée au démarrage donne accès à l'accueil et au quiz.
 
+### Abonnement Stripe en mode test
+
+Le parcours Stripe utilise Checkout hébergé dans le navigateur Expo (compatible Expo Go) et des Edge Functions Supabase. L'essai gratuit de 7 jours est créé par la base; l'accès payant ne s'ouvre qu'après confirmation du webhook Stripe. Le prix de test attendu est de 3 €/mois. Le mode par défaut reste `mock` pour conserver l'accès au MVP; passe `EXPO_PUBLIC_BILLING_PROVIDER=stripe` dans `.env` puis redémarre Expo avec `npx expo start --go --clear` pour activer le paywall réel.
+
+1. Dans Stripe, reste en mode test, crée le produit mensuel à 3 €, puis configure le portail client (résiliation, moyen de paiement, factures).
+2. Depuis PowerShell, déploie la migration SQL et les fonctions. La CLI Supabase est incluse comme dépendance de développement :
+
+```powershell
+npx.cmd supabase login
+npx.cmd supabase link --project-ref <reference-du-projet>
+npx.cmd supabase db push
+npx.cmd supabase functions deploy get-access-status --use-api
+npx.cmd supabase functions deploy create-checkout-session --use-api
+npx.cmd supabase functions deploy create-portal-session --use-api
+npx.cmd supabase functions deploy stripe-webhook --use-api --no-verify-jwt
+```
+
+3. Dans **Supabase → Edge Functions → Secrets**, configure `STRIPE_SECRET_KEY` (clé `sk_test_`), `STRIPE_PRICE_ID` (prix mensuel `price_...`) et `STRIPE_RETURN_URL` (URL HTTPS de `public/stripe-return.html` après hébergement). Ne mets jamais ces valeurs dans `.env`, l'app ou Git.
+4. Dans le tableau de bord Stripe en mode test, crée un webhook vers `https://<project-ref>.supabase.co/functions/v1/stripe-webhook`. Sélectionne `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid` et `invoice.payment_failed`. Copie son secret de signature `whsec_...` dans les secrets Edge Functions Supabase sous `STRIPE_WEBHOOK_SECRET`.
+5. Active `EXPO_PUBLIC_BILLING_PROVIDER=stripe` dans `.env`, vérifie que `EXPO_PUBLIC_SUPABASE_URL` est l'URL API de ton projet (pas `https://supabase.com`) et redémarre avec `npx.cmd expo start --go --clear`. Teste le paiement avec une carte Stripe de test, par exemple `4242 4242 4242 4242`, une date future et un CVC quelconque.
+
+La durée d'essai est réglée dans `public.billing_settings.trial_duration_minutes` (10080 minutes par défaut). Le statut est calculé côté serveur; l'app ne peut pas modifier les droits d'accès. Le webhook est le seul à synchroniser les paiements et est protégé par la signature Stripe. Hors ligne, un accès déjà confirmé est conservé au maximum 30 minutes pendant que l'app reste ouverte; après cette limite, l'accès est revérifié et échoue fermé si le serveur reste inaccessible. Les achats intégrés iOS/Google et le mode Stripe production sont hors périmètre : avant publication iOS, il faudra trancher la conformité App Store et probablement intégrer les achats Apple/Google.
+
 ```bash
 npm run lint
 npm run typecheck

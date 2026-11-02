@@ -40,7 +40,8 @@
         {
           "appGroup": "group.com.tempo.focus"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

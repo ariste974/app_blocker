@@ -12,4 +12,5 @@ export const getScreenTimeSnapshot = simulation.getScreenTimeSnapshot;
 export const requestScreenTimeAuthorization = simulation.requestScreenTimeAuthorization;
 export const saveAppSelection = simulation.saveAppSelection;
 export const enableAppBlocking = simulation.enableAppBlocking;
+export const disableAppBlocking = simulation.disableAppBlocking;
 export const unlockAppsForQuiz = simulation.unlockAppsForQuiz;

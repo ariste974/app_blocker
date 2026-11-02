@@ -183,6 +183,14 @@ const nativeService: ScreenTimeService = {
       throw error;
     }
   },
+  async disableAppBlocking(): Promise<void> {
+    const deviceActivity = getNativeModule();
+    if (!deviceActivity) return simulation.disableAppBlocking();
+
+    deviceActivity.stopMonitoring([blockActivityName, unlockActivityName]);
+    deviceActivity.unblockSelection({ activitySelectionId: selectionId });
+    deviceActivity.userDefaultsRemove(unlockUntilKey);
+  },
   async unlockAppsForQuiz(minutes: number): Promise<number> {
     const deviceActivity = getNativeModule();
     if (!deviceActivity) return simulation.unlockAppsForQuiz(minutes);
@@ -240,4 +248,5 @@ export const requestScreenTimeAuthorization =
   nativeService.requestScreenTimeAuthorization;
 export const saveAppSelection = nativeService.saveAppSelection;
 export const enableAppBlocking = nativeService.enableAppBlocking;
+export const disableAppBlocking = nativeService.disableAppBlocking;
 export const unlockAppsForQuiz = nativeService.unlockAppsForQuiz;

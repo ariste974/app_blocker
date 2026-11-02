@@ -2,16 +2,29 @@ import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 
+import { useBilling } from '../providers/BillingProvider';
 import { useAuth } from '../providers/AuthProvider';
 
 export default function IndexScreen() {
   const { isLoading, session } = useAuth();
+  const billing = useBilling();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (
+      isLoading ||
+      (session !== null && billing.mode === 'stripe' && billing.isLoading)
+    ) {
+      return;
+    }
 
-    router.replace(session ? '/home' : '/sign-in');
-  }, [isLoading, session]);
+    if (!session) {
+      router.replace('/sign-in');
+    } else if (billing.mode === 'stripe' && !billing.access?.has_access) {
+      router.replace('/paywall');
+    } else {
+      router.replace('/home');
+    }
+  }, [billing.access?.has_access, billing.isLoading, billing.mode, isLoading, session]);
 
   return (
     <View style={styles.container}>

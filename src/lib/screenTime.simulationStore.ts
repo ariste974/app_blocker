@@ -135,6 +135,12 @@ export function createScreenTimeSimulation(
       state.unlockUntil = null;
       await writeState(state);
     },
+    async disableAppBlocking() {
+      const state = await readState();
+      state.blockingEnabled = false;
+      state.unlockUntil = null;
+      await writeState(state);
+    },
     async unlockAppsForQuiz(minutes) {
       if (!Number.isInteger(minutes) || minutes < UNLOCK_DURATION_MINUTES) {
         throw new Error(

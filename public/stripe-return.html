@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Retour vers Tempo</title>
+    <style>
+      body {
+        align-items: center;
+        background: #f7f8f4;
+        color: #19372f;
+        display: flex;
+        font-family: system-ui, sans-serif;
+        justify-content: center;
+        margin: 0;
+        min-height: 100vh;
+        text-align: center;
+      }
+      main { max-width: 26rem; padding: 2rem; }
+      h1 { font-size: 1.6rem; }
+      p { color: #78817a; line-height: 1.6; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 id="title">Retour vers Tempo</h1>
+      <p id="message">Tu peux fermer cette page et retourner dans l’application.</p>
+    </main>
+    <script>
+      const status = new URLSearchParams(window.location.search).get('status');
+      if (status === 'success') {
+        document.getElementById('title').textContent = 'Paiement reçu';
+        document.getElementById('message').textContent =
+          'Stripe confirme ton abonnement. Retourne dans Tempo pour actualiser ton accès.';
+      } else if (status === 'cancel') {
+        document.getElementById('title').textContent = 'Paiement annulé';
+        document.getElementById('message').textContent =
+          'Aucun paiement n’a été effectué. Tu peux retourner dans Tempo.';
+      }
+    </script>
+  </body>
+</html>

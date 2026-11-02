@@ -1,0 +1,4 @@
+project_id = "tempo-app"
+
+[functions.stripe-webhook]
+verify_jwt = false

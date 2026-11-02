@@ -28,5 +28,6 @@ export type ScreenTimeService = {
   requestScreenTimeAuthorization: (approved?: boolean) => Promise<AuthorizationStatus>;
   saveAppSelection: (selectionToken: string) => Promise<void>;
   enableAppBlocking: () => Promise<void>;
+  disableAppBlocking: () => Promise<void>;
   unlockAppsForQuiz: (minutes: number) => Promise<number>;
 };

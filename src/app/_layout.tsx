@@ -4,6 +4,7 @@ import { router, Stack } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 
 import { AuthProvider, useAuth } from '../providers/AuthProvider';
+import { BillingProvider, useBilling } from '../providers/BillingProvider';
 
 if (Platform.OS !== 'web') {
   Notifications.setNotificationHandler({
@@ -57,8 +58,9 @@ function NotificationObserver() {
 
 function AuthenticatedRouter() {
   const { session, isLoading } = useAuth();
+  const billing = useBilling();
 
-  if (isLoading) {
+  if (isLoading || (session !== null && billing.mode === 'stripe' && billing.isLoading)) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color="#1A3D34" size="large" />
@@ -74,8 +76,13 @@ function AuthenticatedRouter() {
         <Stack.Protected guard={!session}>
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
-        <Stack.Protected guard={session !== null}>
+        <Stack.Protected guard={session !== null && billing.access?.has_access === true}>
           <Stack.Screen name="(app)" />
+        </Stack.Protected>
+        <Stack.Protected
+          guard={session !== null && billing.mode === 'stripe' && billing.access?.has_access !== true}
+        >
+          <Stack.Screen name="paywall" />
         </Stack.Protected>
       </Stack>
     </>
@@ -85,7 +92,9 @@ function AuthenticatedRouter() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <AuthenticatedRouter />
+      <BillingProvider>
+        <AuthenticatedRouter />
+      </BillingProvider>
     </AuthProvider>
   );
 }

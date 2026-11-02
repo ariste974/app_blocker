@@ -26,6 +26,7 @@ import {
   type SelectionMetadata,
 } from '../../lib/screenTime';
 import { useAuth } from '../../providers/AuthProvider';
+import { useBilling } from '../../providers/BillingProvider';
 
 const initialSnapshot: ScreenTimeSnapshot = {
   authorizationStatus: AUTHORIZATION.notDetermined,
@@ -73,6 +74,7 @@ function formatRemaining(seconds: number): string {
 
 export default function HomeScreen() {
   const { signOut } = useAuth();
+  const billing = useBilling();
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [pickerVisible, setPickerVisible] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -401,6 +403,43 @@ export default function HomeScreen() {
               : 'iOS protège tes choix : Tempo ne voit jamais le nom des apps sélectionnées.'}
           </Text>
         </View>
+        {billing.mode === 'stripe' && (
+          <View style={styles.billingCard}>
+            <Text style={styles.billingTitle}>
+              {billing.access?.status === 'trialing'
+                ? 'Essai gratuit Tempo'
+                : billing.access?.status === 'past_due'
+                  ? 'Paiement à mettre à jour'
+                : billing.access?.cancel_at_period_end
+                  ? 'Abonnement résilié'
+                  : 'Tempo Premium actif'}
+            </Text>
+            {billing.access?.access_until && (
+              <Text style={styles.billingText}>
+                Accès jusqu’au {new Date(billing.access.access_until).toLocaleDateString('fr-FR')}.
+              </Text>
+            )}
+            {billing.access?.has_customer && (
+              <Pressable
+                accessibilityRole="button"
+                disabled={billing.flow !== 'idle'}
+                onPress={() => void billing.openPortal()}
+                style={styles.manageSubscriptionButton}
+              >
+                <Text style={styles.manageSubscriptionText}>
+                  {billing.flow === 'portal'
+                    ? 'Ouverture du portail…'
+                    : 'Gérer mon abonnement'}
+                </Text>
+              </Pressable>
+            )}
+            {billing.error && (
+              <Text accessibilityRole="alert" style={styles.billingError}>
+                {billing.error}
+              </Text>
+            )}
+          </View>
+        )}
         <Pressable
           accessibilityRole="button"
           onPress={() => {
@@ -552,6 +591,19 @@ const styles = StyleSheet.create({
   note: { flexDirection: 'row', marginTop: 22, paddingHorizontal: 3 },
   noteIcon: { color: '#789164', fontSize: 14, marginRight: 8 },
   noteText: { flex: 1, color: '#89918A', fontSize: 11, lineHeight: 17 },
+  billingCard: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E8ECE5',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 15,
+    marginTop: 20,
+  },
+  billingTitle: { color: '#19372F', fontSize: 13, fontWeight: '800' },
+  billingText: { color: '#78817A', fontSize: 11, marginTop: 5 },
+  manageSubscriptionButton: { alignSelf: 'flex-start', paddingTop: 12, paddingBottom: 2 },
+  manageSubscriptionText: { color: '#53664A', fontSize: 12, fontWeight: '700' },
+  billingError: { color: '#963D2D', fontSize: 11, lineHeight: 16, marginTop: 8 },
   signOutButton: { alignSelf: 'center', paddingHorizontal: 18, paddingVertical: 15 },
   signOutText: { color: '#7B847D', fontSize: 12, fontWeight: '700' },
 });
