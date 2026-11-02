@@ -47,6 +47,17 @@ test('expired trials and subscriptions do not grant access', () => {
   assert.equal(expiredSubscription.has_access, false);
 });
 
+test('a 30-second trial expires according to the server time', () => {
+  const trialStart = Date.parse('2026-11-02T12:00:00.000Z');
+  const trialEndsAt = new Date(trialStart + 30_000).toISOString();
+  const shortTrial = entitlement({
+    trial_ends_at: trialEndsAt,
+  });
+
+  assert.equal(getAccessSnapshot(shortTrial, trialStart + 29_999).has_access, true);
+  assert.equal(getAccessSnapshot(shortTrial, trialStart + 30_000).has_access, false);
+});
+
 test('past-due and canceled subscriptions retain access only until paid period end', () => {
   for (const status of ['past_due', 'canceled']) {
     const snapshot = getAccessSnapshot(

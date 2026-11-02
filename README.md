@@ -56,7 +56,27 @@ npx.cmd supabase functions deploy stripe-webhook --use-api --no-verify-jwt
 4. Dans le tableau de bord Stripe en mode test, crée un webhook vers `https://<project-ref>.supabase.co/functions/v1/stripe-webhook`. Sélectionne `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid` et `invoice.payment_failed`. Copie son secret de signature `whsec_...` dans les secrets Edge Functions Supabase sous `STRIPE_WEBHOOK_SECRET`.
 5. Active `EXPO_PUBLIC_BILLING_PROVIDER=stripe` dans `.env`, vérifie que `EXPO_PUBLIC_SUPABASE_URL` est l'URL API de ton projet (pas `https://supabase.com`) et redémarre avec `npx.cmd expo start --go --clear`. Teste le paiement avec une carte Stripe de test, par exemple `4242 4242 4242 4242`, une date future et un CVC quelconque.
 
-La durée d'essai est réglée dans `public.billing_settings.trial_duration_minutes` (10080 minutes par défaut). Le statut est calculé côté serveur; l'app ne peut pas modifier les droits d'accès. Le webhook est le seul à synchroniser les paiements et est protégé par la signature Stripe. Hors ligne, un accès déjà confirmé est conservé au maximum 30 minutes pendant que l'app reste ouverte; après cette limite, l'accès est revérifié et échoue fermé si le serveur reste inaccessible. Les achats intégrés iOS/Google et le mode Stripe production sont hors périmètre : avant publication iOS, il faudra trancher la conformité App Store et probablement intégrer les achats Apple/Google.
+La durée d'essai est réglée dans `public.billing_settings.trial_duration_seconds` (604800 secondes, soit 7 jours, par défaut). Pour un test, après avoir appliqué les migrations, règle-la à 30 secondes dans **Supabase → SQL Editor** :
+
+```sql
+update public.billing_settings
+set trial_duration_seconds = 30, updated_at = now()
+where id = true;
+```
+
+Cette modification ne concerne que les comptes créés ensuite. Pour faire expirer l'essai de ton compte de test existant, utilise un compte sans abonnement Stripe puis exécute, en remplaçant l'adresse :
+
+```sql
+update public.billing_entitlements
+set status = 'trialing',
+    trial_started_at = now(),
+    trial_ends_at = now() + interval '30 seconds',
+    updated_at = now()
+where user_id = (select id from auth.users where email = 'TON_EMAIL')
+  and stripe_subscription_id is null;
+```
+
+Le statut est calculé côté serveur; l'app ne peut pas modifier les droits d'accès. Le webhook est le seul à synchroniser les paiements et est protégé par la signature Stripe. Hors ligne, un accès déjà confirmé est conservé au maximum 30 minutes pendant que l'app reste ouverte; après cette limite, l'accès est revérifié et échoue fermé si le serveur reste inaccessible. Les achats intégrés iOS/Google et le mode Stripe production sont hors périmètre : avant publication iOS, il faudra trancher la conformité App Store et probablement intégrer les achats Apple/Google.
 
 ```bash
 npm run lint
